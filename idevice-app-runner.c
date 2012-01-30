@@ -25,16 +25,16 @@
 
 /*
   build me with:
-    $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
+  $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
 
   relevant: 
-    https://github.com/ghughes/fruitstrap
-    http://www.libimobiledevice.org/
+  https://github.com/ghughes/fruitstrap
+  http://www.libimobiledevice.org/
 
   to get apppath:
-    $ APPPATH=`ideviceinstaller -l -o xml | egrep -A1 '<key>Path</key>|<key>CFBundleName</key>' | tr -d $'\n' | sed 's/--/\n/g' | egrep -A1 'CFBundleName.*'$APPNAME | tail -1 | tr '<>' '  ' | awk '{print $5}'`
+  $ APPPATH=`ideviceinstaller -l -o xml | egrep -A1 '<key>Path</key>|<key>CFBundleName</key>' | tr -d $'\n' | sed 's/--/\n/g' | egrep -A1 'CFBundleName.*'$APPNAME | tail -1 | tr '<>' '  ' | awk '{print $5}'`
 
- */
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -51,66 +51,66 @@ int run_mode = 0;
 
 static void print_usage(int argc, char **argv)
 {
-	char *name = NULL;
+    char *name = NULL;
 
-	name = strrchr(argv[0], '/');
-	printf("Usage: %s OPTIONS\n", (name ? name + 1 : argv[0]));
-	printf("Run (debug) apps on an iDevice.\n\n");
-	printf
-		("  -U, --uuid UUID\tTarget specific device by its 40-digit device UUID.\n"
-		 "  -r, --run PATH\tRun (debug) app specified by on-device path (use ideviceinstaller -l -o xml to find it).\n"
-		 "  -h, --help\t\tprints usage information\n"
-		 "  -d, --debug\t\tenable communication debugging\n" "\n");
+    name = strrchr(argv[0], '/');
+    printf("Usage: %s OPTIONS\n", (name ? name + 1 : argv[0]));
+    printf("Run (debug) apps on an iDevice.\n\n");
+    printf
+        ("  -U, --uuid UUID\tTarget specific device by its 40-digit device UUID.\n"
+         "  -r, --run PATH\tRun (debug) app specified by on-device path (use ideviceinstaller -l -o xml to find it).\n"
+         "  -h, --help\t\tprints usage information\n"
+         "  -d, --debug\t\tenable communication debugging\n" "\n");
 }
 
 static void parse_opts(int argc, char **argv)
 {
-	static struct option longopts[] = {
-		{"help", 0, NULL, 'h'},
-		{"uuid", 1, NULL, 'U'},
-		{"run", 1, NULL, 'r'},
-		{"debug", 0, NULL, 'd'},
-		{NULL, 0, NULL, 0}
-	};
-	int c;
+    static struct option longopts[] = {
+        {"help", 0, NULL, 'h'},
+        {"uuid", 1, NULL, 'U'},
+        {"run", 1, NULL, 'r'},
+        {"debug", 0, NULL, 'd'},
+        {NULL, 0, NULL, 0}
+    };
+    int c;
 
-	while (1) {
-		c = getopt_long(argc, argv, "hU:r:d", longopts,
-						(int *) 0);
-		if (c == -1) {
-			break;
-		}
+    while (1) {
+        c = getopt_long(argc, argv, "hU:r:d", longopts,
+                        (int *) 0);
+        if (c == -1) {
+            break;
+        }
 
-		switch (c) {
-		case 'h':
-			print_usage(argc, argv);
-			exit(0);
-		case 'U':
-			if (strlen(optarg) != 40) {
-				printf("%s: invalid UUID specified (length != 40)\n",
-					   argv[0]);
-				print_usage(argc, argv);
-				exit(2);
-			}
-			uuid = strdup(optarg);
-			break;
-		case 'r':
-			run_mode = 1;
-			apppath = strdup(optarg);
-			break;
-		case 'd':
-			idevice_set_debug_level(1);
-			break;
-		default:
-			print_usage(argc, argv);
-			exit(2);
-		}
-	}
+        switch (c) {
+        case 'h':
+            print_usage(argc, argv);
+            exit(0);
+        case 'U':
+            if (strlen(optarg) != 40) {
+                printf("%s: invalid UUID specified (length != 40)\n",
+                       argv[0]);
+                print_usage(argc, argv);
+                exit(2);
+            }
+            uuid = strdup(optarg);
+            break;
+        case 'r':
+            run_mode = 1;
+            apppath = strdup(optarg);
+            break;
+        case 'd':
+            idevice_set_debug_level(1);
+            break;
+        default:
+            print_usage(argc, argv);
+            exit(2);
+        }
+    }
 
-	if (optind <= 1 || (argc - optind > 0)) {
-		print_usage(argc, argv);
-		exit(2);
-	}
+    if (optind <= 1 || (argc - optind > 0)) {
+        print_usage(argc, argv);
+        exit(2);
+    }
 }
 
 //#define WITH_DEBUG
@@ -210,30 +210,30 @@ void send_pkt(char* buf, idevice_connection_t connection)
 
 int main(int argc, char **argv)
 {
-	idevice_t phone = NULL;
-	lockdownd_client_t client = NULL;
-	uint16_t port = 0;
-	int res = 0;
+    idevice_t phone = NULL;
+    lockdownd_client_t client = NULL;
+    uint16_t port = 0;
+    int res = 0;
 
-	parse_opts(argc, argv);
+    parse_opts(argc, argv);
 
-	argc -= optind;
-	argv += optind;
+    argc -= optind;
+    argv += optind;
 
     if (!apppath) {
-		fprintf(stderr, "App path requred.\n");
+        fprintf(stderr, "App path requred.\n");
         return -1;
     }
 
-	if (IDEVICE_E_SUCCESS != idevice_new(&phone, uuid)) {
-		fprintf(stderr, "No iPhone found, is it plugged in?\n");
-		return -1;
-	}
+    if (IDEVICE_E_SUCCESS != idevice_new(&phone, uuid)) {
+        fprintf(stderr, "No iPhone found, is it plugged in?\n");
+        return -1;
+    }
 
-	if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(phone, &client, "idevice-app-runner")) {
-		fprintf(stderr, "Could not connect to lockdownd. Exiting.\n");
-		goto leave_cleanup;
-	}
+    if (LOCKDOWN_E_SUCCESS != lockdownd_client_new_with_handshake(phone, &client, "idevice-app-runner")) {
+        fprintf(stderr, "Could not connect to lockdownd. Exiting.\n");
+        goto leave_cleanup;
+    }
 
     int port2 = 0;
     if ((lockdownd_start_service
@@ -289,26 +289,26 @@ int main(int argc, char **argv)
 
     printf("enter to exit..."); getchar();
 
-	if (client) {
-		/* not needed anymore */
-		lockdownd_client_free(client);
-		client = NULL;
-	}
+    if (client) {
+        /* not needed anymore */
+        lockdownd_client_free(client);
+        client = NULL;
+    }
 
-	do_wait_when_needed();
+    do_wait_when_needed();
 
-  leave_cleanup:
-	if (client) {
-		lockdownd_client_free(client);
-	}
-	idevice_free(phone);
+leave_cleanup:
+    if (client) {
+        lockdownd_client_free(client);
+    }
+    idevice_free(phone);
 
-	if (uuid) {
-		free(uuid);
-	}
-	if (apppath) {
-		free(apppath);
-	}
+    if (uuid) {
+        free(uuid);
+    }
+    if (apppath) {
+        free(apppath);
+    }
 
-	return res;
+    return res;
 }
