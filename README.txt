@@ -7,7 +7,7 @@ Requirements:
 
 Build:
 
-    $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
+    $ make
 
 Usage:
 
