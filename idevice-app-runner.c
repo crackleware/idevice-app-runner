@@ -1,5 +1,5 @@
 /**
- * run app on iDevice using com.apple.debugserver [by pbr]
+ * run app on iDevice using com.apple.debugserver - by <predrg@gmail.com>
  *
  * based on:
  *   ideviceinstaller - Copyright (C) 2010 Nikias Bassen <nikias@gmx.li>
@@ -26,14 +26,6 @@
 /*
   build me with:
   $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
-
-  relevant: 
-  https://github.com/ghughes/fruitstrap
-  http://www.libimobiledevice.org/
-
-  to get apppath:
-  $ APPPATH=`ideviceinstaller -l -o xml | egrep -A1 '<key>Path</key>|<key>CFBundleName</key>' | tr -d $'\n' | sed 's/--/\n/g' | egrep -A1 'CFBundleName.*'$APPNAME | tail -1 | tr '<>' '  ' | awk '{print $5}'`
-
 */
 
 #include <stdlib.h>
