@@ -30,6 +30,7 @@ Tested:
 
     Linux, x86_64, libimobiledevice-git, iOS 4.1 - works
     Linux, x86_64, libimobiledevice-git, iOS 5.0.1 - works
+    Linux, i686, libimobiledevice-git, iOS 5.0.1 - works
 
 References:
     https://github.com/ghughes/fruitstrap - very helpful
