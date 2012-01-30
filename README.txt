@@ -1,5 +1,11 @@
 *** Run app on iDevice using com.apple.debugserver ***
 
+This simple application will start iOS app (using
+com.apple.debugserver) and tail its output.
+
+Interrupting idevice-app-runner process (ctrl-c) stops app on iDevice
+too.
+
 Requirements:
 
     * libimobiledevice - http://www.libimobiledevice.org/
@@ -19,6 +25,11 @@ Xcode and fruitscrap.
 To get app path, for example:
 
     $ APPNAME=something APPPATH=`ideviceinstaller -l -o xml | egrep -A1 '<key>Path</key>|<key>CFBundleName</key>' | tr -d $'\n' | sed 's/--/\n/g' | egrep -A1 'CFBundleName.*'$APPNAME | tail -1 | tr '<>' '  ' | awk '{print $5}'`
+
+Tested:
+
+    Linux, x86_64, libimobiledevice-git, iOS 4.1 - works
+    Linux, x86_64, libimobiledevice-git, iOS 5.0.1 - works
 
 References:
     https://github.com/ghughes/fruitstrap - very helpful
