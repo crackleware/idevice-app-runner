@@ -1,7 +1,7 @@
 *** Run app on iDevice using com.apple.debugserver ***
 
-This simple application will start iOS app (using
-com.apple.debugserver) and tail its output.
+This simple utility will start iOS app (using com.apple.debugserver)
+and tail its output.
 
 Interrupting idevice-app-runner process (ctrl-c) stops app on iDevice
 too.
