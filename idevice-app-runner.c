@@ -159,6 +159,8 @@ void recv_pkt(idevice_connection_t connection)
 #else
             printf("%s", buf3);
 #endif
+            fflush(stderr);
+            fflush(stdout);
         }
     }
 }
