@@ -32,14 +32,16 @@ or
 
 Tested:
 
-    Linux, x86_64, libimobiledevice-git, iOS 4.1 - works
-    Linux, x86_64, libimobiledevice-git, iOS 5.0.1 - works
-    Linux, i686, libimobiledevice-git, iOS 5.0.1 - works
+    Linux 3.0, x86_64, libimobiledevice-git, iOS 4.1 - works
+    Linux 3.0, x86_64, libimobiledevice-git, iOS 5.0.1 - works
+    Linux 3.0, i686, libimobiledevice-git, iOS 5.0.1 - works
 
 References:
+
     https://github.com/ghughes/fruitstrap - very helpful
 
 Contact:
+
     predrg@gmail.com
 
 DTRUSS COMMANDS:
@@ -73,7 +75,6 @@ cont
 end
 
 b send
-4
 command
 printf "fd=%ld, size=%ld\n", $rdi, $rdx
 x/s $rsi
