@@ -26,6 +26,10 @@ To get app path, for example:
 
     $ APPNAME=something APPPATH=`ideviceinstaller -l -o xml | egrep -A1 '<key>Path</key>|<key>CFBundleName</key>' | tr -d $'\n' | sed 's/--/\n/g' | egrep -A1 'CFBundleName.*'$APPNAME | tail -1 | tr '<>' '  ' | awk '{print $5}'`
 
+or
+
+    $ ideviceinstaller -l -o xml | grep -A1 '<key>Path</key>' | grep '<string>' | tr '<>' '  ' | awk '{ print $2 }' | grep $APPNAME
+
 Tested:
 
     Linux, x86_64, libimobiledevice-git, iOS 4.1 - works
