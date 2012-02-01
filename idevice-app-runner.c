@@ -135,8 +135,8 @@ void send_str(char* buf, idevice_connection_t connection)
 void recv_pkt(idevice_connection_t connection)
 {
     int bytes = 0;
-    char buf[4000];
-    idevice_connection_receive_timeout(connection, buf, sizeof(buf), &bytes, 1000);
+    char buf[16*1024];
+    idevice_connection_receive_timeout(connection, buf, sizeof(buf)-1, &bytes, 1000);
 #ifdef WITH_DEBUG
     printf("recv: bytes=%d\n", bytes);
 #endif
@@ -149,9 +149,10 @@ void recv_pkt(idevice_connection_t connection)
         send_str("+", connection);
         if (bytes > 1 && buf[1] == 'O') {
             char* c = buf+2;
-            char buf3[4000];
+            char* bufend = buf+strlen(buf);
+            char buf3[16*1024];
             int i = 0;
-            while (*c != '#')
+            while (*c != '#' && c < bufend)
                 buf3[i++] = fromhex(*c++) << 4 | fromhex(*c++);
             buf3[i] = 0x00;
 #ifdef WITH_DEBUG
@@ -169,12 +170,9 @@ void send_pkt(char* buf, idevice_connection_t connection)
 {
     int i;
     unsigned char csum = 0;
-    char *buf2;
-    char buf3[1];
+    char *buf2 = malloc (32*1024);
     int cnt = strlen (buf);
     char *p;
-
-    buf2 = malloc (4000);
 
     /* Copy the packet into buffer BUF2, encapsulating it
        and giving it a checksum.  */
@@ -198,6 +196,7 @@ void send_pkt(char* buf, idevice_connection_t connection)
 #ifdef WITH_DEBUG
     printf("send: bytes=%d (%s)\n", bytes, buf);
 #endif
+    free(buf2);
 
     recv_pkt(connection);
 }
@@ -254,7 +253,7 @@ int main(int argc, char **argv)
         NULL,
     };
 
-    cmds[0] = malloc(1000);
+    cmds[0] = malloc(2000);
     char* p = cmds[0];
     sprintf(p, "A%d,0,", strlen(apppath)*2/* +4 */);
     p += strlen(p);
