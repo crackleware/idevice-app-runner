@@ -36,6 +36,23 @@ Tested:
     Linux 3.0, x86_64, libimobiledevice-git, iOS 5.0.1 - works
     Linux 3.0, i686, libimobiledevice-git, iOS 5.0.1 - works
 
+Notes:
+
+    Sometimes debugger process or application being run is left
+hanging, it's not killed properly. When that happens it's impossible
+to run application again.  Workaround for this issue is to restore
+device with --reboot option,
+
+       $ idevicebackup2 restore --reboot bakdir...
+
+Wait for device to come back online by monitoring with ideviceinfo. It
+will take a few minutes. When reboot is completed, developer image
+should be mounted,
+
+       $ idevicemountimage .../{DeveloperDiskImage.dmg,DeveloperDiskImage.dmg.signature}
+
+so idevice-app-runner can be used again.
+
 References:
 
     https://github.com/ghughes/fruitstrap - very helpful
