@@ -228,7 +228,7 @@ int main(int argc, char **argv)
         goto leave_cleanup;
     }
 
-    int port2 = 0;
+    uint16_t port2 = 0;
     if ((lockdownd_start_service
          (client, "com.apple.debugserver",
           &port2) != LOCKDOWN_E_SUCCESS) || !port2) {
