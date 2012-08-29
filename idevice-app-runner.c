@@ -243,6 +243,12 @@ int main(int argc, char **argv)
         goto leave_cleanup;
     }
 
+    if (client) {
+        /* not needed anymore */
+        lockdownd_client_free(client);
+        client = NULL;
+    }
+
     /* send_str("+", connection); */
 
     char* cmds[] = {
@@ -282,10 +288,9 @@ int main(int argc, char **argv)
 
     printf("enter to exit..."); getchar();
 
-    if (client) {
-        /* not needed anymore */
-        lockdownd_client_free(client);
-        client = NULL;
+leave_cleanup:
+    if (connection) {
+        idevice_disconnect(connection);
     }
 
     do_wait_when_needed();
