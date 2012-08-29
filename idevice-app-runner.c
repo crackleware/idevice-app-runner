@@ -214,7 +214,7 @@ int main(int argc, char **argv)
     argv += optind;
 
     if (!apppath) {
-        fprintf(stderr, "App path requred.\n");
+        fprintf(stderr, "App path required.\n");
         return -1;
     }
 
