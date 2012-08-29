@@ -304,7 +304,8 @@ int main(int argc, char **argv)
         /* sleep(1); */
     }
 
-    printf("enter to exit..."); getchar();
+    /* kill */
+    send_pkt("k", connection);
 
 leave_cleanup:
     if (connection) {
