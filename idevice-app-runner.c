@@ -28,6 +28,7 @@
   $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
 */
 
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,10 +37,20 @@
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
-char *uuid = NULL;
+char *udid = NULL;
 char *apppath = NULL;
 
 int run_mode = 0;
+static int quit_flag = 0;
+
+/**
+ * signal handler function for cleaning up properly
+ */
+static void clean_exit(int sig)
+{
+	fprintf(stderr, "Exiting...\n");
+	quit_flag++;
+}
 
 static void print_usage(int argc, char **argv)
 {
@@ -208,6 +219,13 @@ int main(int argc, char **argv)
     uint16_t port = 0;
     int res = 0;
 
+	signal(SIGINT, clean_exit);
+	signal(SIGTERM, clean_exit);
+#ifndef WIN32
+	signal(SIGQUIT, clean_exit);
+	signal(SIGPIPE, SIG_IGN);
+#endif
+
     parse_opts(argc, argv);
 
     argc -= optind;
@@ -281,7 +299,7 @@ int main(int argc, char **argv)
         cmd++;
     }
 
-    while (1) {
+    while (!quit_flag) {
         recv_pkt(connection);
         /* sleep(1); */
     }
@@ -293,9 +311,6 @@ leave_cleanup:
         idevice_disconnect(connection);
     }
 
-    do_wait_when_needed();
-
-leave_cleanup:
     if (client) {
         lockdownd_client_free(client);
     }
