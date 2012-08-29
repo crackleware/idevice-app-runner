@@ -60,7 +60,7 @@ static void print_usage(int argc, char **argv)
     printf("Usage: %s OPTIONS\n", (name ? name + 1 : argv[0]));
     printf("Run (debug) apps on an iDevice.\n\n");
     printf
-        ("  -U, --uuid UUID\tTarget specific device by its 40-digit device UUID.\n"
+        ("  -U, --udid UDID\tTarget specific device by its 40-digit device UDID.\n"
          "  -r, --run PATH\tRun (debug) app specified by on-device path (use ideviceinstaller -l -o xml to find it).\n"
          "  -h, --help\t\tprints usage information\n"
          "  -d, --debug\t\tenable communication debugging\n" "\n");
@@ -70,7 +70,7 @@ static void parse_opts(int argc, char **argv)
 {
     static struct option longopts[] = {
         {"help", 0, NULL, 'h'},
-        {"uuid", 1, NULL, 'U'},
+        {"udid", 1, NULL, 'U'},
         {"run", 1, NULL, 'r'},
         {"debug", 0, NULL, 'd'},
         {NULL, 0, NULL, 0}
@@ -90,12 +90,12 @@ static void parse_opts(int argc, char **argv)
             exit(0);
         case 'U':
             if (strlen(optarg) != 40) {
-                printf("%s: invalid UUID specified (length != 40)\n",
+                printf("%s: invalid UDID specified (length != 40)\n",
                        argv[0]);
                 print_usage(argc, argv);
                 exit(2);
             }
-            uuid = strdup(optarg);
+            udid = strdup(optarg);
             break;
         case 'r':
             run_mode = 1;
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    if (IDEVICE_E_SUCCESS != idevice_new(&phone, uuid)) {
+    if (IDEVICE_E_SUCCESS != idevice_new(&phone, udid)) {
         fprintf(stderr, "No iPhone found, is it plugged in?\n");
         return -1;
     }
@@ -317,8 +317,8 @@ leave_cleanup:
     }
     idevice_free(phone);
 
-    if (uuid) {
-        free(uuid);
+    if (udid) {
+        free(udid);
     }
     if (apppath) {
         free(apppath);
