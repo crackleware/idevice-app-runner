@@ -216,6 +216,7 @@ int main(int argc, char **argv)
 {
     idevice_t phone = NULL;
     lockdownd_client_t client = NULL;
+    idevice_connection_t connection = NULL;
     uint16_t port = 0;
     int res = 0;
 
@@ -255,7 +256,6 @@ int main(int argc, char **argv)
         goto leave_cleanup;
     }
 
-    idevice_connection_t connection = NULL;
     if (idevice_connect(phone, port2, &connection) != IDEVICE_E_SUCCESS) {
         fprintf(stderr, "idevice_connect failed!\n");
         goto leave_cleanup;
