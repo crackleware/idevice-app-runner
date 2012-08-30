@@ -290,7 +290,7 @@ int main(int argc, char **argv)
     /* sprintf(p, "%02x%02x", '/', '.'); */
 
     char** cmd = cmds;
-    while (*cmd) {
+    while (*cmd && !quit_flag) {
         printf("'%s'\n", *cmd);
         sleep(1);
         send_pkt(*cmd, connection);
