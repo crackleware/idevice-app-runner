@@ -28,6 +28,7 @@
   $ gcc -g -pthread idevice-app-runner.c -o idevice-app-runner /usr/lib/libimobiledevice.so
 */
 
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,10 +37,20 @@
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
-char *uuid = NULL;
+char *udid = NULL;
 char *apppath = NULL;
 
 int run_mode = 0;
+static int quit_flag = 0;
+
+/**
+ * signal handler function for cleaning up properly
+ */
+static void clean_exit(int sig)
+{
+	fprintf(stderr, "Exiting...\n");
+	quit_flag++;
+}
 
 static void print_usage(int argc, char **argv)
 {
@@ -49,7 +60,7 @@ static void print_usage(int argc, char **argv)
     printf("Usage: %s OPTIONS\n", (name ? name + 1 : argv[0]));
     printf("Run (debug) apps on an iDevice.\n\n");
     printf
-        ("  -U, --uuid UUID\tTarget specific device by its 40-digit device UUID.\n"
+        ("  -U, --udid UDID\tTarget specific device by its 40-digit device UDID.\n"
          "  -r, --run PATH\tRun (debug) app specified by on-device path (use ideviceinstaller -l -o xml to find it).\n"
          "  -h, --help\t\tprints usage information\n"
          "  -d, --debug\t\tenable communication debugging\n" "\n");
@@ -59,7 +70,7 @@ static void parse_opts(int argc, char **argv)
 {
     static struct option longopts[] = {
         {"help", 0, NULL, 'h'},
-        {"uuid", 1, NULL, 'U'},
+        {"udid", 1, NULL, 'U'},
         {"run", 1, NULL, 'r'},
         {"debug", 0, NULL, 'd'},
         {NULL, 0, NULL, 0}
@@ -79,12 +90,12 @@ static void parse_opts(int argc, char **argv)
             exit(0);
         case 'U':
             if (strlen(optarg) != 40) {
-                printf("%s: invalid UUID specified (length != 40)\n",
+                printf("%s: invalid UDID specified (length != 40)\n",
                        argv[0]);
                 print_usage(argc, argv);
                 exit(2);
             }
-            uuid = strdup(optarg);
+            udid = strdup(optarg);
             break;
         case 'r':
             run_mode = 1;
@@ -205,8 +216,16 @@ int main(int argc, char **argv)
 {
     idevice_t phone = NULL;
     lockdownd_client_t client = NULL;
+    idevice_connection_t connection = NULL;
     uint16_t port = 0;
     int res = 0;
+
+	signal(SIGINT, clean_exit);
+	signal(SIGTERM, clean_exit);
+#ifndef WIN32
+	signal(SIGQUIT, clean_exit);
+	signal(SIGPIPE, SIG_IGN);
+#endif
 
     parse_opts(argc, argv);
 
@@ -214,11 +233,11 @@ int main(int argc, char **argv)
     argv += optind;
 
     if (!apppath) {
-        fprintf(stderr, "App path requred.\n");
+        fprintf(stderr, "App path required.\n");
         return -1;
     }
 
-    if (IDEVICE_E_SUCCESS != idevice_new(&phone, uuid)) {
+    if (IDEVICE_E_SUCCESS != idevice_new(&phone, udid)) {
         fprintf(stderr, "No iPhone found, is it plugged in?\n");
         return -1;
     }
@@ -228,7 +247,7 @@ int main(int argc, char **argv)
         goto leave_cleanup;
     }
 
-    int port2 = 0;
+    uint16_t port2 = 0;
     if ((lockdownd_start_service
          (client, "com.apple.debugserver",
           &port2) != LOCKDOWN_E_SUCCESS) || !port2) {
@@ -237,10 +256,15 @@ int main(int argc, char **argv)
         goto leave_cleanup;
     }
 
-    idevice_connection_t connection = NULL;
     if (idevice_connect(phone, port2, &connection) != IDEVICE_E_SUCCESS) {
         fprintf(stderr, "idevice_connect failed!\n");
         goto leave_cleanup;
+    }
+
+    if (client) {
+        /* not needed anymore */
+        lockdownd_client_free(client);
+        client = NULL;
     }
 
     /* send_str("+", connection); */
@@ -266,7 +290,7 @@ int main(int argc, char **argv)
     /* sprintf(p, "%02x%02x", '/', '.'); */
 
     char** cmd = cmds;
-    while (*cmd) {
+    while (*cmd && !quit_flag) {
         printf("'%s'\n", *cmd);
         sleep(1);
         send_pkt(*cmd, connection);
@@ -275,29 +299,26 @@ int main(int argc, char **argv)
         cmd++;
     }
 
-    while (1) {
+    while (!quit_flag) {
         recv_pkt(connection);
         /* sleep(1); */
     }
 
-    printf("enter to exit..."); getchar();
-
-    if (client) {
-        /* not needed anymore */
-        lockdownd_client_free(client);
-        client = NULL;
-    }
-
-    do_wait_when_needed();
+    /* kill */
+    send_pkt("k", connection);
 
 leave_cleanup:
+    if (connection) {
+        idevice_disconnect(connection);
+    }
+
     if (client) {
         lockdownd_client_free(client);
     }
     idevice_free(phone);
 
-    if (uuid) {
-        free(uuid);
+    if (udid) {
+        free(udid);
     }
     if (apppath) {
         free(apppath);
