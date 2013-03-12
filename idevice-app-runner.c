@@ -37,6 +37,17 @@
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
+#ifdef WIN32
+# include <windows.h>
+# define sleep(x) Sleep(x*1000)
+#endif
+
+#ifdef WIN32
+# define __strdup _strdup
+#else
+# define __strdup strdup
+#endif
+
 char *udid = NULL;
 char *apppath = NULL;
 
@@ -95,11 +106,11 @@ static void parse_opts(int argc, char **argv)
                 print_usage(argc, argv);
                 exit(2);
             }
-            udid = strdup(optarg);
+            udid = __strdup(optarg);
             break;
         case 'r':
             run_mode = 1;
-            apppath = strdup(optarg);
+            apppath = __strdup(optarg);
             break;
         case 'd':
             idevice_set_debug_level(1);
@@ -147,7 +158,7 @@ void recv_pkt(idevice_connection_t connection)
 {
     int bytes = 0;
     char buf[16*1024];
-    idevice_connection_receive_timeout(connection, buf, sizeof(buf)-1, &bytes, 1000);
+    idevice_connection_receive_timeout(connection, buf, sizeof(buf)-1, (uint32_t*)&bytes, 1000);
 #ifdef WITH_DEBUG
     printf("recv: bytes=%d\n", bytes);
 #endif
@@ -181,7 +192,7 @@ void send_pkt(char* buf, idevice_connection_t connection)
 {
     int i;
     unsigned char csum = 0;
-    char *buf2 = malloc (32*1024);
+    char *buf2 = (char *)malloc (32*1024);
     int cnt = strlen (buf);
     char *p;
 
@@ -276,7 +287,7 @@ int main(int argc, char **argv)
         NULL,
     };
 
-    cmds[0] = malloc(2000);
+    cmds[0] = (char *)malloc(2000);
     char* p = cmds[0];
     sprintf(p, "A%d,0,", strlen(apppath)*2/* +4 */);
     p += strlen(p);
